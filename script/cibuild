@@ -1,9 +1,19 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+script/branding
 
 set -e
 
-bundle exec jekyll build
-bundle exec htmlproofer ./_site --check-html --check-sri
-bundle exec rubocop -D --config .rubocop.yml
-bundle exec script/validate-html
-gem build jekyll-theme-minimalist.gemspec
+if [[ -z "$TEST_SUITE" ]]
+then
+  script/fmt
+  script/test ci
+  script/cucumber
+  script/default-site
+elif [[ -x "script/$TEST_SUITE" ]]
+then
+  script/$TEST_SUITE
+else
+  echo "Unknown test suite."
+  exit 1
+fi
